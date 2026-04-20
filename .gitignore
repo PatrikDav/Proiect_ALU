@@ -1,0 +1,11 @@
+.claude/
+
+# Build artefacts
+build/
+sim/
+*.vcd
+*.log
+*.out
+
+# PDFs (huge, not tracked in git)
+*.pdf
