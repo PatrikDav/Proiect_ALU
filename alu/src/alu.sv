@@ -21,21 +21,23 @@ module alu
    import alu_pkg::*;
    #(parameter int WIDTH = DATA_WIDTH)
    (
-    input  logic signed [WIDTH-1:0]  a,
-    input  logic signed [WIDTH-1:0]  b,
-    input  logic [OP_WIDTH-1:0]      op,
-    output logic signed [WIDTH-1:0]  result,
-    output logic                     zero,
-    output logic                     negative,
-    output logic                     overflow
+    input  logic signed [WIDTH-1:0]    a,
+    input  logic signed [WIDTH-1:0]    b,
+    input  logic [OP_WIDTH-1:0]        op,
+    output logic signed [WIDTH-1:0]    result,
+    output logic signed [WIDTH-1:0]    result_hi,   // MUL: high 8 bits of product; 0 otherwise
+    output logic                       zero,
+    output logic                       negative,
+    output logic                       overflow
     );
 
    //------------------------------------------------------------------
    // Per-unit outputs
    //------------------------------------------------------------------
-   logic signed [WIDTH-1:0] addsub_y, mul_y, div_y, shift_y;
-   logic        [WIDTH-1:0] logic_y;
-   logic                    addsub_ov, mul_ov, div_ov;
+   logic signed [WIDTH-1:0]   addsub_y, mul_y, div_y, shift_y;
+   logic        [WIDTH-1:0]   logic_y;
+   logic signed [2*WIDTH-1:0] mul_full;
+   logic                      addsub_ov, mul_ov, div_ov;
 
    //------------------------------------------------------------------
    // Per-unit control signals derived from the opcode
@@ -68,10 +70,11 @@ module alu
    );
 
    alu_multiplier #(.WIDTH(WIDTH)) u_mul (
-      .a       (a),
-      .b       (b),
-      .product (mul_y),
-      .overflow(mul_ov)
+      .a           (a),
+      .b           (b),
+      .product     (mul_y),
+      .product_full(mul_full),
+      .overflow    (mul_ov)
    );
 
    alu_divider    #(.WIDTH(WIDTH)) u_div (
@@ -100,13 +103,14 @@ module alu
    //------------------------------------------------------------------
    always_comb begin
       // Safe defaults (prevent latches on unused opcodes)
-      result   = '0;
-      overflow = 1'b0;
+      result    = '0;
+      result_hi = '0;
+      overflow  = 1'b0;
 
       unique case (op)
         OP_ADD: begin result = addsub_y; overflow = addsub_ov; end
         OP_SUB: begin result = addsub_y; overflow = addsub_ov; end
-        OP_MUL: begin result = mul_y;    overflow = mul_ov;    end
+        OP_MUL: begin result = mul_y; result_hi = mul_full[2*WIDTH-1:WIDTH]; overflow = mul_ov; end
         OP_DIV: begin result = div_y;    overflow = div_ov;    end
         OP_AND,
         OP_OR,

@@ -15,6 +15,7 @@ module alu_multiplier #(parameter int WIDTH = 8) (
    input  logic signed [WIDTH-1:0]     a,
    input  logic signed [WIDTH-1:0]     b,
    output logic signed [WIDTH-1:0]     product,
+   output logic signed [2*WIDTH-1:0]   product_full,
    output logic                        overflow
    );
 
@@ -29,6 +30,7 @@ module alu_multiplier #(parameter int WIDTH = 8) (
    logic                      upper_all_one;
 
    assign full           = a * b;
+   assign product_full   = full;
    assign product        = full[WIDTH-1:0];
 
    assign upper_all_zero = (full[2*WIDTH-1:WIDTH-1] == '0);

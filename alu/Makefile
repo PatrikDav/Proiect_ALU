@@ -25,8 +25,10 @@ VERILOG_SOURCES := \
 # Testbenches to build and run (name matches the top module in the .sv file).
 TESTBENCHES := alu_tb
 
-.PHONY: all prepare clean
+.PHONY: all prepare clean build-cli
 all: prepare $(TESTBENCHES)
+
+build-cli: prepare $(BUILD_DIR)/alu_cli_tb.out
 
 prepare:
 	mkdir -p $(BUILD_DIR)
